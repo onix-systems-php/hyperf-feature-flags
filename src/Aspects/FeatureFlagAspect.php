@@ -63,7 +63,7 @@ class FeatureFlagAspect extends AbstractAspect
         )[FeatureFlag::class] ?? null;
         if (!$annotation instanceof FeatureFlag) {
             throw new AnnotationException(
-                __('Invalid annotation: Expected FeatureFlag, but received ' . get_called_class($annotation))
+                __('Invalid annotation: Expected FeatureFlag, but received ' . get_class($annotation))
             );
         }
 

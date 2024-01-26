@@ -15,11 +15,9 @@ return [
      * - flags: list of feature flags
      * - overrides: list of feature flag overrides
      */
-    'FeatureFlags' => [
-        'enabled' => true,
-        'flags' => [
-            // ...
-        ],
-        'overrides' => [],
+    'enabled' => true,
+    'flags' => [
+        // ...
     ],
+    'overrides' => [],
 ];

@@ -13,6 +13,6 @@ use OnixSystemsPHP\HyperfCore\DTO\AbstractDTO;
 
 class UpdateFeatureFlagDTO extends AbstractDTO
 {
-    public int $featureFlagId;
-    public ?bool $value;
+    public string $name;
+    public bool $rule;
 }

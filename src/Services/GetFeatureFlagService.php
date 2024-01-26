@@ -23,6 +23,8 @@ use function Hyperf\Support\env;
 #[Service]
 readonly class GetFeatureFlagService
 {
+    public const FEATURE_FLAG_DOT_PREFIX = 'feature_flag.';
+
     public function __construct(
         private Redis $redis,
         private ConfigInterface $config,
@@ -43,19 +45,18 @@ readonly class GetFeatureFlagService
         if (!$this->config->get('feature_flags.enabled')) {
             return null;
         }
-        $redisValue = $this->redis->get($name);
-        if ($redisValue || $redisValue === '') {
-            $rule = match ($redisValue) {
-                RedisValue::TRUE, RedisValue::FALSE => (bool)$redisValue,
-                default => $redisValue,
-            };
-        } elseif ($featureFlag = $this->featureFlagRepository->getByFeature($name)) {
-            $rule = $featureFlag->rule;
-            $this->redis->set($name, $rule);
-        } else {
-            $rule = $this->config->get('feature_flags.flags.' . $name) ?: false;
-            $this->redis->set($name, $rule);
+
+        $redisValue = $this->redis->get(self::FEATURE_FLAG_DOT_PREFIX . $name);
+        if (!is_null($redisValue)) {
+            return (bool)$redisValue;
         }
+        if ($featureFlag = $this->featureFlagRepository->getByName($name)) {
+            $result = $this->evaluate($featureFlag->rule);
+            $this->redis->set(self::FEATURE_FLAG_DOT_PREFIX . $name, $result);
+
+            return $result;
+        }
+        $rule = $this->config->get('feature_flags.flags.' . $name) ?: false;
 
         return $this->evaluate($rule);
     }
@@ -111,7 +112,6 @@ readonly class GetFeatureFlagService
     private function getTypeCallbacks(): array
     {
         return [
-            'env' => fn($value) => env($value),
             'config' => fn($value) => $this->config->get($value),
             'feature' => fn($value) => $this->run($value),
             'date' => fn($value) => (new Carbon($value))->format('Y-m-d'),

@@ -43,45 +43,42 @@ readonly class SetFeatureFlagService
      * @throws \RedisException
      * @throws \Exception
      */
-    public function run(UpdateFeatureFlagDTO $featureFlagDTO): ?FeatureFlag
+    public function run(UpdateFeatureFlagDTO $updateFeatureFlagDTO): ?FeatureFlag
     {
-        if (!empty($this->authenticatableProvider->user())) {
-            $this->validate($featureFlagDTO);
-            $featureFlag = $this->featureFlagRepository->getById($featureFlagDTO->featureFlagId);
-            $this->policyGuard?->check('update', $featureFlag);
-            if (is_null($featureFlagDTO->value)) {
-                $featureFlag->delete();
+        $this->validate($updateFeatureFlagDTO);
+        /** @var FeatureFlag $featureFlag */
+        $featureFlag = $this->featureFlagRepository->updateOrCreate(
+            ['name' => $updateFeatureFlagDTO->name],
+            [
+                'rule' => $updateFeatureFlagDTO->rule,
+                'overridden_at' => Carbon::now(),
+                'user_id' => $this->authenticatableProvider->user()->getId()
+            ],
+        );
+        $this->policyGuard?->check('create', $featureFlag);
 
-                return null;
-            }
-            $featureFlag->overridden = $featureFlagDTO->value;
-            $featureFlag->user_id = $this->authenticatableProvider->user()->getId();
-            $featureFlag->overridden_at = Carbon::now();
-            $featureFlag->save();
-            $this->eventDispatcher->dispatch(
-                new Action(Actions::OVERRIDE_FEATURE_FLAG, $featureFlag, [$featureFlagDTO->value])
-            );
+        $this->eventDispatcher->dispatch(
+            new Action(Actions::OVERRIDE_FEATURE_FLAG, $featureFlag, [$updateFeatureFlagDTO->rule])
+        );
 
-            $this->redis->del($featureFlag->feature);
+        $this->redis->del($updateFeatureFlagDTO->name);
 
-            return $featureFlag;
-        }
-        return null;
+        return $featureFlag;
     }
 
     /**
-     * @param UpdateFeatureFlagDTO $featureFlagDTO
+     * @param UpdateFeatureFlagDTO $updateFeatureFlagDTO
      * @return void
      */
-    private function validate(UpdateFeatureFlagDTO $featureFlagDTO): void
+    private function validate(UpdateFeatureFlagDTO $updateFeatureFlagDTO): void
     {
-        $this->validatorFactory->make($featureFlagDTO->toArray(), [
-            'featureFlagId' => ['required', 'integer'],
-            'value' => ['required'],
+        $this->validatorFactory->make($updateFeatureFlagDTO->toArray(), [
+            'name' => ['required', 'string'],
+            'rule' => ['required'],
         ], [
-            'featureFlag.required' => 'Feature flag id must be required!',
-            'featureFlag.integer' => 'Feature flag id must be integer!',
-            'value.required' => 'Value must be required!',
+            'name.required' => 'Name must be required!',
+            'name.string' => 'Name must be string!',
+            'rule.required' => 'Value must be required!',
         ])->validate();
     }
 }

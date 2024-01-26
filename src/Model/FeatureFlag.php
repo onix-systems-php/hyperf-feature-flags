@@ -14,10 +14,9 @@ use OnixSystemsPHP\HyperfCore\Model\AbstractOwnedModel;
 
 /**
  * @property int $id
- * @property string $feature
+ * @property string $name
  * @property string $rule
  * @property int|null $user_id
- * @property bool|null $overridden
  * @property Carbon|null $overridden_at
  */
 class FeatureFlag extends AbstractOwnedModel
@@ -33,11 +32,10 @@ class FeatureFlag extends AbstractOwnedModel
      * The attributes that are mass assignable.
      */
     protected array $fillable = [
-        'feature',
+        'name',
         'rule',
         'overridden_at',
         'user_id',
-        'overridden',
     ];
 
     /**
@@ -45,10 +43,9 @@ class FeatureFlag extends AbstractOwnedModel
      */
     protected array $casts = [
         'id' => 'integer',
-        'feature' => 'string',
+        'name' => 'string',
         'rule' => 'string',
         'overridden_at' => 'datetime',
         'user_id' => 'integer',
-        'overridden' => 'boolean',
     ];
 }

@@ -40,7 +40,6 @@
         "hyperf/hyperf": "^3.1",
         "nesbot/carbon": "^2.72",
         "onix-systems-php/hyperf-actions-log": "^1.2",
-        "onix-systems-php/hyperf-core": "^1.2.0",
-        "onix-systems-php/hyperf-policy": "^1.2"
+        "onix-systems-php/hyperf-core": "^1.2.0"
     }
 }

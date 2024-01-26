@@ -26,23 +26,13 @@ class FeatureFlagRepository extends AbstractRepository
 {
     protected string $modelClass = FeatureFlag::class;
 
-    public function getByFeature(string $name, bool $lock = false, bool $force = false): ?FeatureFlag
+    public function getByName(string $name, bool $lock = false, bool $force = false): ?FeatureFlag
     {
         return $this->finder('feature', $name)->fetchOne($lock, $force);
     }
 
-    public function scopeFeature(Builder $query, string $name): void
+    public function scopeName(Builder $query, string $name): void
     {
         $query->where('feature', $name);
-    }
-
-    public function getById(int $id, bool $lock = false, bool $force = false): ?FeatureFlag
-    {
-        return $this->finder('id', $id)->fetchOne($lock, $force);
-    }
-
-    public function scopeId(Builder $query, int $id): void
-    {
-        $query->where('id', $id);
     }
 }
