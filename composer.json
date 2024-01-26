@@ -1,0 +1,46 @@
+{
+    "name": "onix-systems-php/hyperf-feature-flags",
+    "type": "extension",
+    "keywords": [
+        "php",
+        "hyperf",
+        "feature-flags"
+    ],
+    "description": "An extension for feature flags",
+    "autoload": {
+        "psr-4": {
+            "OnixSystemsPHP\\HyperfFeatureFlags\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OnixSystemsPHP\\HyperfFeatureFlags\\Test\\": "tests"
+        }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.48",
+        "mockery/mockery": "^1.6",
+        "phpstan/phpstan": "^1.10",
+        "phpunit/phpunit": "^10.5",
+        "symfony/var-dumper": "^7.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit -c phpunit.xml --colors=always",
+        "analyse": "phpstan analyse --memory-limit 1024M -l 0 ./src",
+        "cs-fix": "php-cs-fixer fix $1"
+    },
+    "require": {
+        "ext-redis": "*",
+        "hyperf/hyperf": "^3.1",
+        "nesbot/carbon": "^2.72",
+        "onix-systems-php/hyperf-actions-log": "^1.2",
+        "onix-systems-php/hyperf-core": "^1.2.0",
+        "onix-systems-php/hyperf-policy": "^1.2"
+    }
+}
