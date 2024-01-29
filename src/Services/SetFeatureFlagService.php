@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
 use Carbon\Carbon;
+use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\Redis\Redis;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use OnixSystemsPHP\HyperfActionsLog\Event\Action;
@@ -43,6 +44,7 @@ readonly class SetFeatureFlagService
      * @throws \RedisException
      * @throws \Exception
      */
+    #[Transactional]
     public function run(UpdateFeatureFlagDTO $updateFeatureFlagDTO): ?FeatureFlag
     {
         $this->validate($updateFeatureFlagDTO);
@@ -52,7 +54,7 @@ readonly class SetFeatureFlagService
             [
                 'rule' => $updateFeatureFlagDTO->rule,
                 'overridden_at' => Carbon::now(),
-                'user_id' => $this->authenticatableProvider->user()->getId()
+                'user_id' => $this->authenticatableProvider->user()?->getId()
             ],
         );
         $this->policyGuard?->check('create', $featureFlag);
@@ -73,12 +75,12 @@ readonly class SetFeatureFlagService
     private function validate(UpdateFeatureFlagDTO $updateFeatureFlagDTO): void
     {
         $this->validatorFactory->make($updateFeatureFlagDTO->toArray(), [
-            'name' => ['required', 'string'],
-            'rule' => ['required'],
+            'name' => ['required'],
+            'rule' => ['required', 'boolean'],
         ], [
             'name.required' => 'Name must be required!',
-            'name.string' => 'Name must be string!',
             'rule.required' => 'Value must be required!',
+            'rule.boolean' => 'Value must be boolean!',
         ])->validate();
     }
 }

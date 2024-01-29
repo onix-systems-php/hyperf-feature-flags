@@ -12,13 +12,8 @@ namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 use Carbon\Carbon;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Redis\Redis;
-
 use OnixSystemsPHP\HyperfCore\Service\Service;
-
-use OnixSystemsPHP\HyperfFeatureFlags\Constants\RedisValue;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
-
-use function Hyperf\Support\env;
 
 #[Service]
 readonly class GetFeatureFlagService
@@ -33,10 +28,8 @@ readonly class GetFeatureFlagService
     }
 
     /**
-     * Check if the feature is enabled
+     * Check if the feature is enabled.
      *
-     * @param string $name
-     * @return bool|null
      * @throws \RedisException
      * @throws \Exception
      */
@@ -52,22 +45,18 @@ readonly class GetFeatureFlagService
         }
         if ($featureFlag = $this->featureFlagRepository->getByName($name)) {
             $result = $this->evaluate($featureFlag->rule);
-            $this->redis->set(self::FEATURE_FLAG_DOT_PREFIX . $name, $result);
-
-            return $result;
+        } else {
+            $result = $this->evaluate($this->config->get('feature_flags.flags.' . $name) ?: false);
         }
-        $rule = $this->config->get('feature_flags.flags.' . $name) ?: false;
+        $this->redis->set(self::FEATURE_FLAG_DOT_PREFIX . $name, $result);
 
-        return $this->evaluate($rule);
+        return $result;
     }
 
     /**
      * Evaluate the rule.
-     *
-     * @param string|bool $rule
-     * @return bool
      */
-    private function evaluate(string|bool $rule): bool
+    private function evaluate(bool|string $rule): bool
     {
         if (is_bool($rule)) {
             return $rule;
@@ -86,12 +75,6 @@ readonly class GetFeatureFlagService
 
     /**
      * Substitute the rules with type and callback.
-     *
-     * @param array $values
-     * @param string $rule
-     * @param string $type
-     * @param callable|null $callback
-     * @return void
      */
     private function substitute(array &$values, string &$rule, string $type, ?callable $callback = null): void
     {
@@ -105,7 +88,7 @@ readonly class GetFeatureFlagService
     }
 
     /**
-     * Get type and its callback
+     * Get type and its callback.
      *
      * @return \Closure[]
      */
