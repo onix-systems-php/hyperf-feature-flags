@@ -45,11 +45,8 @@ readonly class ResetFeatureFlagService
     {
         $this->validate($resetFeatureFlagDTO);
 
-        $featureFlag = $this->featureFlagRepository->getByName($resetFeatureFlagDTO->name);
+        $featureFlag = $this->featureFlagRepository->getByName($resetFeatureFlagDTO->name, force: true);
 
-        if (!$featureFlag) {
-            throw new ModelNotFoundException('Model not found');
-        }
         $this->policyGuard?->check('reset', $featureFlag);
         $featureFlag->delete();
         $this->redis->del($featureFlag->name);
@@ -69,8 +66,6 @@ readonly class ResetFeatureFlagService
     {
         $this->validatorFactory->make($featureFlagDTO->toArray(), [
             'name' => ['required'],
-        ], [
-            'name.required' => 'Feature flag name must be required!',
         ])->validate();
     }
 }

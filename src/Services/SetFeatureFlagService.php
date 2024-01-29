@@ -48,21 +48,19 @@ readonly class SetFeatureFlagService
     public function run(UpdateFeatureFlagDTO $updateFeatureFlagDTO): ?FeatureFlag
     {
         $this->validate($updateFeatureFlagDTO);
+        $featureFlag = $this->featureFlagRepository->create($updateFeatureFlagDTO->toArray());
+        $this->policyGuard?->check('create', $featureFlag);
         /** @var FeatureFlag $featureFlag */
-        $featureFlag = $this->featureFlagRepository->updateOrCreate(
-            ['name' => $updateFeatureFlagDTO->name],
+        $featureFlag = $this->featureFlagRepository->updateOrCreate(['name' => $updateFeatureFlagDTO->name],
             [
                 'rule' => $updateFeatureFlagDTO->rule,
                 'overridden_at' => Carbon::now(),
                 'user_id' => $this->authenticatableProvider->user()?->getId()
             ],
         );
-        $this->policyGuard?->check('create', $featureFlag);
-
         $this->eventDispatcher->dispatch(
             new Action(Actions::OVERRIDE_FEATURE_FLAG, $featureFlag, [$updateFeatureFlagDTO->rule])
         );
-
         $this->redis->del($updateFeatureFlagDTO->name);
 
         return $featureFlag;
@@ -77,10 +75,6 @@ readonly class SetFeatureFlagService
         $this->validatorFactory->make($updateFeatureFlagDTO->toArray(), [
             'name' => ['required'],
             'rule' => ['required', 'boolean'],
-        ], [
-            'name.required' => 'Name must be required!',
-            'rule.required' => 'Value must be required!',
-            'rule.boolean' => 'Value must be boolean!',
         ])->validate();
     }
 }
