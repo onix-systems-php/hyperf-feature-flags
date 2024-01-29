@@ -43,7 +43,7 @@ readonly class GetFeatureFlagService
         if (!is_null($redisValue)) {
             return (bool)$redisValue;
         }
-        if ($featureFlag = $this->featureFlagRepository->getByName($name, force: true)) {
+        if ($featureFlag = $this->featureFlagRepository->getByName($name)) {
             $result = $this->evaluate($featureFlag->rule);
         } else {
             $result = $this->evaluate($this->config->get('feature_flags.flags.' . $name) ?: false);
