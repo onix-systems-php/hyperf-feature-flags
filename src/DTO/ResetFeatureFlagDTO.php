@@ -13,7 +13,5 @@ use OnixSystemsPHP\HyperfCore\DTO\AbstractDTO;
 
 class ResetFeatureFlagDTO extends AbstractDTO
 {
-    public int $id;
-
-    public bool $disable;
+    public string $name;
 }

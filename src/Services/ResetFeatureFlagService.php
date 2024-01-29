@@ -45,23 +45,20 @@ readonly class ResetFeatureFlagService
     {
         $this->validate($resetFeatureFlagDTO);
 
-        if ($resetFeatureFlagDTO->disable) {
-            $featureFlag = $this->featureFlagRepository->getById($resetFeatureFlagDTO->id);
+        $featureFlag = $this->featureFlagRepository->getByName($resetFeatureFlagDTO->name);
 
-            if (!$featureFlag) {
-                throw new ModelNotFoundException('Model not found');
-            }
-            $this->policyGuard?->check('reset', $featureFlag);
-            $featureFlag->delete();
-            $this->redis->del($featureFlag->name);
-
-            $this->eventDispatcher->dispatch(
-                new Action(Actions::RESET_FEATURE_FLAG, $featureFlag, [
-                    'feature_flag_id' => $resetFeatureFlagDTO->id,
-                    'disable' => $resetFeatureFlagDTO->disable,
-                ])
-            );
+        if (!$featureFlag) {
+            throw new ModelNotFoundException('Model not found');
         }
+        $this->policyGuard?->check('reset', $featureFlag);
+        $featureFlag->delete();
+        $this->redis->del($featureFlag->name);
+
+        $this->eventDispatcher->dispatch(
+            new Action(Actions::RESET_FEATURE_FLAG, $featureFlag, [
+                'feature_flag_name' => $resetFeatureFlagDTO->name,
+            ])
+        );
     }
 
     /**
@@ -71,12 +68,9 @@ readonly class ResetFeatureFlagService
     public function validate(ResetFeatureFlagDTO $featureFlagDTO): void
     {
         $this->validatorFactory->make($featureFlagDTO->toArray(), [
-            'id' => ['required'],
-            'disable' => ['required', 'boolean']
+            'name' => ['required'],
         ], [
-            'id.required' => 'Feature flag id must be required!',
-            'disable.required' => 'Disable must be required!',
-            'disable.boolean' => 'Disable should take true or false!'
+            'name.required' => 'Feature flag name must be required!',
         ])->validate();
     }
 }

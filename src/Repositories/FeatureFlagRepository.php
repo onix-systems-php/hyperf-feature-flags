@@ -46,25 +46,4 @@ class FeatureFlagRepository extends AbstractRepository
     {
         $query->where('name', $name);
     }
-
-    /**
-     * @param int $id
-     * @param bool $lock
-     * @param bool $force
-     * @return FeatureFlag|null
-     */
-    public function getById(int $id, bool $lock = false, bool $force = false): ?FeatureFlag
-    {
-        return $this->finder('id', $id)->fetchOne($lock, $force);
-    }
-
-    /**
-     * @param Builder $query
-     * @param int $id
-     * @return void
-     */
-    public function scopeId(Builder $query, int $id): void
-    {
-        $query->where('id', $id);
-    }
 }
