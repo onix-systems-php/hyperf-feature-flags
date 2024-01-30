@@ -35,7 +35,7 @@ readonly class GetFeatureFlagService
     public function run(string $name): ?bool
     {
         $redisValue = $this->redisWrapper->get(self::FEATURE_FLAG_DOT_PREFIX . $name);
-        if (is_string($redisValue)) {
+        if (!empty($redisValue)) {
             return (bool) $redisValue;
         }
         if ($featureFlag = $this->featureFlagRepository->getByName($name)) {

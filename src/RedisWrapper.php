@@ -16,10 +16,10 @@ class RedisWrapper extends Redis
     /**
      * @inheritDoc
      */
-    public function get($key): false|string
+    public function get($key): null|string
     {
         $value = parent::get($key);
 
-        return is_string($value) ? $value : false;
+        return is_string($value) ? $value : null;
     }
 }

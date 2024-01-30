@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
+use Hyperf\Contract\ConfigInterface;
 use OnixSystemsPHP\HyperfCore\Service\Service;
 
 use function Hyperf\Config\config;
@@ -16,7 +17,10 @@ use function Hyperf\Config\config;
 #[Service]
 readonly class GetCurrentFeatureFlagsService
 {
-    public function __construct(private GetFeatureFlagService $getFeatureFlagService) {}
+    public function __construct(
+        private GetFeatureFlagService $getFeatureFlagService,
+        private ConfigInterface $config
+    ) {}
 
     /**
      * Get feature flags from config and their values.
@@ -27,7 +31,7 @@ readonly class GetCurrentFeatureFlagsService
     public function run(): array
     {
         $result = [];
-        $keys = array_keys(config('feature_flags'));
+        $keys = array_keys($this->config->get('feature_flags'));
         array_map(function ($key) use (&$result) {
             return $result[$key] = $this->getFeatureFlagService->run($key);
         }, $keys);

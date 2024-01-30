@@ -39,6 +39,6 @@ readonly class GetOverriddenFeatureFlagsService
             $result[$key] = $this->redisWrapper->get($key);
         }, $keys);
 
-        return array_filter($result, fn($elem) => $elem !== false);
+        return array_filter($result, fn($elem) => $elem !== null);
     }
 }
