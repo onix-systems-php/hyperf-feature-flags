@@ -20,7 +20,5 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class FeatureFlag extends AbstractAnnotation
 {
-    public function __construct(public string $name, public mixed $default = null)
-    {
-    }
+    public function __construct(public string $name, public mixed $default = null) {}
 }

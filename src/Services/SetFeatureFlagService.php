@@ -20,6 +20,7 @@ use OnixSystemsPHP\HyperfCore\Service\Service;
 use OnixSystemsPHP\HyperfFeatureFlags\Constants\Actions;
 use OnixSystemsPHP\HyperfFeatureFlags\DTO\UpdateFeatureFlagDTO;
 use OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag;
+use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -31,10 +32,9 @@ readonly class SetFeatureFlagService
         private FeatureFlagRepository $featureFlagRepository,
         private EventDispatcherInterface $eventDispatcher,
         private ValidatorFactoryInterface $validatorFactory,
-        private Redis $redis,
+        private RedisWrapper $redisWrapper,
         private ?CorePolicyGuard $policyGuard,
-    ) {
-    }
+    ) {}
 
     /**
      * Override the feature flag.
@@ -51,7 +51,8 @@ readonly class SetFeatureFlagService
         $featureFlag = $this->featureFlagRepository->create($updateFeatureFlagDTO->toArray());
         $this->policyGuard?->check('create', $featureFlag);
         /** @var FeatureFlag $featureFlag */
-        $featureFlag = $this->featureFlagRepository->updateOrCreate(['name' => $updateFeatureFlagDTO->name],
+        $featureFlag = $this->featureFlagRepository->updateOrCreate(
+            ['name' => $updateFeatureFlagDTO->name],
             [
                 'rule' => $updateFeatureFlagDTO->rule,
                 'overridden_at' => Carbon::now(),
@@ -61,7 +62,7 @@ readonly class SetFeatureFlagService
         $this->eventDispatcher->dispatch(
             new Action(Actions::OVERRIDE_FEATURE_FLAG, $featureFlag, [$updateFeatureFlagDTO->rule])
         );
-        $this->redis->del($updateFeatureFlagDTO->name);
+        $this->redisWrapper->del($updateFeatureFlagDTO->name);
 
         return $featureFlag;
     }

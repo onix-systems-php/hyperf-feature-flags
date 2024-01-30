@@ -9,39 +9,36 @@ declare(strict_types=1);
 
 namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
-use Hyperf\Database\Model\Collection;
-use Hyperf\Redis\Redis;
-
 use OnixSystemsPHP\HyperfCore\Service\Service;
+
+use OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag;
+
+use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 
 use function Hyperf\Config\config;
 
 #[Service]
 readonly class GetOverriddenFeatureFlagsService
 {
-    public function __construct(private Redis $redis) {}
+    public function __construct(private RedisWrapper $redisWrapper) {}
 
     /**
-     * Get overridden feature flags.
+     * Get all overridden feature flags.
      *
-     * @return Collection|array
+     * @return array
      * @throws \RedisException
      */
-    public function run(): Collection|array
+    public function run(): array
     {
-        $prefix = config('redis.default.options');
-        $rawKeys = $this->redis->keys('*');
-        if ($prefix) {
-            $keys = array_map(function ($key) use ($prefix) {
-                return str_replace($prefix, '', $key);
-            }, $rawKeys);
-        } else {
-            $keys = $rawKeys;
-        }
-        $values = array_map(function ($key) {
-            return $this->redis->get($key);
+        $keys = array_keys(config('feature_flags'));
+        $result = [];
+        array_map(function ($featureFlag) use (&$result) {
+            return $result[$featureFlag['name']] = $featureFlag['rule'];
+        }, FeatureFlag::all(['name', 'rule'])->toArray());
+        array_map(function ($key) use (&$result) {
+            $result[$key] = $this->redisWrapper->get($key);
         }, $keys);
 
-        return array_combine($keys, $values);
+        return array_filter($result, fn($elem) => $elem !== false);
     }
 }

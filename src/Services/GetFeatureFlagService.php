@@ -11,8 +11,8 @@ namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
 use Carbon\Carbon;
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Redis\Redis;
 use OnixSystemsPHP\HyperfCore\Service\Service;
+use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
 
 #[Service]
@@ -21,11 +21,10 @@ readonly class GetFeatureFlagService
     public const FEATURE_FLAG_DOT_PREFIX = 'feature_flag.';
 
     public function __construct(
-        private Redis $redis,
+        private RedisWrapper $redisWrapper,
         private ConfigInterface $config,
         private FeatureFlagRepository $featureFlagRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Check if the feature is enabled.
@@ -35,26 +34,25 @@ readonly class GetFeatureFlagService
      */
     public function run(string $name): ?bool
     {
-        if (!$this->config->get('feature_flags.enabled')) {
-            return null;
-        }
-
-        $redisValue = $this->redis->get(self::FEATURE_FLAG_DOT_PREFIX . $name);
-        if (!is_null($redisValue)) {
-            return (bool)$redisValue;
+        $redisValue = $this->redisWrapper->get(self::FEATURE_FLAG_DOT_PREFIX . $name);
+        if (is_string($redisValue)) {
+            return (bool) $redisValue;
         }
         if ($featureFlag = $this->featureFlagRepository->getByName($name)) {
             $result = $this->evaluate($featureFlag->rule);
         } else {
-            $result = $this->evaluate($this->config->get('feature_flags.flags.' . $name) ?: false);
+            $result = $this->evaluate($this->config->get('feature_flags.' . $name) ?: false);
         }
-        $this->redis->set(self::FEATURE_FLAG_DOT_PREFIX . $name, $result);
+        $this->redisWrapper->set(self::FEATURE_FLAG_DOT_PREFIX . $name, $result);
 
         return $result;
     }
 
     /**
      * Evaluate the rule.
+     *
+     * @param bool|string $rule
+     * @return bool
      */
     private function evaluate(bool|string $rule): bool
     {
@@ -75,6 +73,12 @@ readonly class GetFeatureFlagService
 
     /**
      * Substitute the rules with type and callback.
+     *
+     * @param array $values
+     * @param string $rule
+     * @param string $type
+     * @param callable|null $callback
+     * @return void
      */
     private function substitute(array &$values, string &$rule, string $type, ?callable $callback = null): void
     {

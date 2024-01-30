@@ -16,19 +16,22 @@ use function Hyperf\Config\config;
 #[Service]
 readonly class GetCurrentFeatureFlagsService
 {
-    public function __construct(private GetOverriddenFeatureFlagsService $overriddenFeatureFlagsService) {}
+    public function __construct(private GetFeatureFlagService $getFeatureFlagService) {}
 
     /**
-     * Get current feature flags.
+     * Get feature flags from config and their values.
      *
-     * @return array|mixed
+     * @return array
      * @throws \RedisException
      */
-    public function run(): mixed
+    public function run(): array
     {
-        $overridden = $this->overriddenFeatureFlagsService->run();
-        $fromConfig = config('feature_flags');
+        $result = [];
+        $keys = array_keys(config('feature_flags'));
+        array_map(function ($key) use (&$result) {
+            return $result[$key] = $this->getFeatureFlagService->run($key);
+        }, $keys);
 
-        return $overridden + $fromConfig;
+        return $result;
     }
 }

@@ -25,9 +25,7 @@ class FeatureFlagAspect extends AbstractAspect
         FeatureFlag::class,
     ];
 
-    public function __construct(private readonly GetFeatureFlagService $getFeatureFlagService)
-    {
-    }
+    public function __construct(private readonly GetFeatureFlagService $getFeatureFlagService) {}
 
     /**
      * @param ProceedingJoinPoint $proceedingJoinPoint

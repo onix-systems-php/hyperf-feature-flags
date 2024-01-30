@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
-use Hyperf\Database\Model\ModelNotFoundException;
 use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use OnixSystemsPHP\HyperfActionsLog\Event\Action;
@@ -17,6 +16,7 @@ use OnixSystemsPHP\HyperfCore\Contract\CorePolicyGuard;
 use OnixSystemsPHP\HyperfCore\Service\Service;
 use OnixSystemsPHP\HyperfFeatureFlags\Constants\Actions;
 use OnixSystemsPHP\HyperfFeatureFlags\DTO\ResetFeatureFlagDTO;
+use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Redis;
@@ -29,9 +29,8 @@ readonly class ResetFeatureFlagService
         private FeatureFlagRepository $featureFlagRepository,
         private ?CorePolicyGuard $policyGuard,
         private EventDispatcherInterface $eventDispatcher,
-        private Redis $redis,
-    ) {
-    }
+        private RedisWrapper $redisWrapper,
+    ) {}
 
     /**
      * Reset feature flag to default.
@@ -49,7 +48,7 @@ readonly class ResetFeatureFlagService
 
         $this->policyGuard?->check('reset', $featureFlag);
         $featureFlag->delete();
-        $this->redis->del($featureFlag->name);
+        $this->redisWrapper->del($featureFlag->name);
 
         $this->eventDispatcher->dispatch(
             new Action(Actions::RESET_FEATURE_FLAG, $featureFlag, [
