@@ -1,0 +1,5 @@
+version: '3.8'
+services:
+  hyperf-test:
+    container_name: 'hyperf-test'
+    image: hyperf/hyperf:8.2-alpine-v3.18-swoole-v5
