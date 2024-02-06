@@ -89,6 +89,20 @@ class SlackController
 }
 ```
 
+For example, we have in our config these rules:
+```php
+return [
+    'my-awesome-feature' => true,
+    'my-custom-feature' => "[date:now] > '2050-31-12' || [config:slack-integration] || [feature:my-awesome-feature]",
+]
+```
+What will be the value of this rule?
+
+1. The first part, will evaluate `[date:now] > '2050-31-12'`. Obviously, until `2050-31-12` it will be false.
+2. The second part, will evaluate `[config:slack-integration]`. It will take `slack-integration` from the `config.php` file if you have. Assume, we don't have `slack-integration` in our config file. So it will be `null`.
+3. The third part, will evaluate `[feature:my-awesome-feature]`. Nothing fancy, it will take from our file `/cofnig/autoload/feature_flags.php`, `true` value.
+4. Finally, evaluation of this rule `my-custom-feature` will be `false || null || true`. As the result of evaluation will be `true`.
+
 ## Classes:
 
 ##### OnixSystemsPHP\HyperfFeatureFlags\Services\SetFeatureFlagService
