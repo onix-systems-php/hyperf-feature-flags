@@ -14,9 +14,7 @@ class ConfigProvider
     public function __invoke(): array
     {
         return [
-            'dependencies' => [
-                \OnixSystemsPHP\HyperfCore\Contract\CorePolicyGuard::class => \OnixSystemsPHP\HyperfPolicy\Service\PolicyGuardService::class,
-            ],
+            'dependencies' => [],
             'commands' => [],
             'annotations' => [
                 'scan' => [

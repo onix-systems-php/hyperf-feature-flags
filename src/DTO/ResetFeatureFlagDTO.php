@@ -11,8 +11,7 @@ namespace OnixSystemsPHP\HyperfFeatureFlags\DTO;
 
 use OnixSystemsPHP\HyperfCore\DTO\AbstractDTO;
 
-class UpdateFeatureFlagDTO extends AbstractDTO
+class ResetFeatureFlagDTO extends AbstractDTO
 {
     public string $name;
-    public bool $rule;
 }

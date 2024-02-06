@@ -20,11 +20,10 @@ class CreateFeatureFlagsTable extends Migration
     {
         Schema::create('feature_flags', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('feature', 255);
+            $table->string('name', 255);
             $table->string('rule', 255);
-            $table->timestamp('overridden_at')->nullable();
             $table->bigInteger('user_id')->nullable();
-            $table->boolean('overridden')->default(null)->nullable();
+            $table->timestamp('overridden_at')->nullable();
         });
     }
 

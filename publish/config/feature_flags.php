@@ -11,15 +11,9 @@ return [
     /**
      * Feature flags configuration.
      *
-     * - enabled: global switch to enable/disable feature flags
-     * - flags: list of feature flags
-     * - overrides: list of feature flag overrides
+     * Example:
+     * 'name' => value
+     * 'slack-integration' => true
      */
-    'FeatureFlags' => [
-        'enabled' => true,
-        'flags' => [
-            // ...
-        ],
-        'overrides' => [],
-    ],
+    'slack-integration' => true,
 ];

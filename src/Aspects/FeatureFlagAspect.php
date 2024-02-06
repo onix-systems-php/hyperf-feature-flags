@@ -18,6 +18,8 @@ use Hyperf\Di\Exception\Exception;
 use OnixSystemsPHP\HyperfFeatureFlags\Annotations\FeatureFlag;
 use OnixSystemsPHP\HyperfFeatureFlags\Services\GetFeatureFlagService;
 
+use function Hyperf\Translation\__;
+
 #[Aspect]
 class FeatureFlagAspect extends AbstractAspect
 {
@@ -25,9 +27,7 @@ class FeatureFlagAspect extends AbstractAspect
         FeatureFlag::class,
     ];
 
-    public function __construct(private readonly GetFeatureFlagService $getFeatureFlagService)
-    {
-    }
+    public function __construct(private readonly GetFeatureFlagService $getFeatureFlagService) {}
 
     /**
      * @param ProceedingJoinPoint $proceedingJoinPoint
@@ -63,7 +63,7 @@ class FeatureFlagAspect extends AbstractAspect
         )[FeatureFlag::class] ?? null;
         if (!$annotation instanceof FeatureFlag) {
             throw new AnnotationException(
-                __('Invalid annotation: Expected FeatureFlag, but received ' . get_called_class($annotation))
+                __('Invalid annotation: Expected FeatureFlag, but received ' . get_class($annotation))
             );
         }
 

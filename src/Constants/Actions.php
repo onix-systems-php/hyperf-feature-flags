@@ -16,4 +16,5 @@ use Hyperf\Constants\Annotation\Constants;
 class Actions extends AbstractConstants
 {
     public const OVERRIDE_FEATURE_FLAG = 'override-feature-flag';
+    public const RESET_FEATURE_FLAG = 'reset-feature-flag';
 }
