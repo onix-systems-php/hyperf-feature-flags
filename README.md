@@ -48,7 +48,7 @@ php bin/hyperf.php vendor:publish onix-systems-php/hyperf-feature-flags
 return [
     'slack-integration' => true,
     'my-custom-feature' => "[date:now] > '2024-02-06' && [date:now] <= '2024-12-31'",
-    'my-awesome-feature' => '[config:slack-integration] === true || [feature:my-custom-feature] === false',
+    'my-awesome-feature' => '[config:slack.integration] === true || [feature:my-custom-feature] === false',
 ];
 ```
 
@@ -75,7 +75,7 @@ the second parameter in `FeatureFlag` aspect was set to false then it indicates 
 1. Via: `OnixSystemsPHP\HyperfFeatureFlags\Services\GetFeatureFlagService`
 
 This example introduces how you can use it from your controller method which should return `Psr\Http\Message\ResponseInterface`. Here we don't use annotation because we need to return not a primitive but an object.
-
+So if `$this->getFeatureFlagService->run('slack-integration')` will return false, we just return `$this->response->json([])`. Otherwise, we go next.
 ```php
 class SlackController
 {
@@ -93,13 +93,13 @@ For example, we have in our config these rules:
 ```php
 return [
     'my-awesome-feature' => true,
-    'my-custom-feature' => "[date:now] > '2050-31-12' || [config:slack-integration] || [feature:my-awesome-feature]",
+    'my-custom-feature' => "[date:now] > '2050-31-12' || [config:slack.integration] || [feature:my-awesome-feature]",
 ]
 ```
 What will be the value of this rule?
 
 1. The first part, will evaluate `[date:now] > '2050-31-12'`. Obviously, until `2050-31-12` it will be false.
-2. The second part, will evaluate `[config:slack-integration]`. It will take `slack-integration` from the `config.php` file if you have. Assume, we don't have `slack-integration` in our config file. So it will be `null`.
+2. The second part, will evaluate `[config:slack.integration]`. It will take `integration` value from the `config/autoload/slack.php` file if you have. Assume, we don't have `slack-integration` in our config file. So it will be `null`.
 3. The third part, will evaluate `[feature:my-awesome-feature]`. Nothing fancy, it will take from our file `/cofnig/autoload/feature_flags.php`, `true` value.
 4. Finally, evaluation of this rule `my-custom-feature` will be `false || null || true`. As the result of evaluation will be `true`.
 
