@@ -19,6 +19,7 @@ use OnixSystemsPHP\HyperfCore\Repository\AbstractRepository;
  * @method \OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag update(Model $model, array $data)
  * @method \OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag save(Model $model)
  * @method \OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag delete(Model $model)
+ * @method \OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag all(array $attributes)
  * @method \OnixSystemsPHP\HyperfCore\Model\Builder|\OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository finder(string $type, ...$parameters)
  * @method \OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag|null fetchOne(bool $lock, bool $force)
  */

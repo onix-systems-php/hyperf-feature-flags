@@ -10,14 +10,6 @@ declare(strict_types=1);
 return [
     /**
      * Feature flags configuration.
-     *
-     * - enabled: global switch to enable/disable feature flags
-     * - flags: list of feature flags
-     * - overrides: list of feature flag overrides
      */
-    'enabled' => true,
-    'flags' => [
-        // ...
-    ],
-    'overrides' => [],
+    //...
 ];

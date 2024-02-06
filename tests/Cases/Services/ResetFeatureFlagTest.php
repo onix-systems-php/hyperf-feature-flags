@@ -1,8 +1,14 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of the extension library for Hyperf.
+ *
+ * @license https://github.com/hyperf/blob/master/LICENSE
+ */
+
 namespace OnixSystemsPHP\HyperfFeatureFlags\Test\Cases\Services;
 
-use DummyInterface;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
 use Hyperf\Validation\ValidationException;
 use Mockery;
@@ -10,7 +16,7 @@ use OnixSystemsPHP\HyperfCore\Contract\CorePolicyGuard;
 use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
 use OnixSystemsPHP\HyperfFeatureFlags\Services\ResetFeatureFlagService;
-use OnixSystemsPHP\HyperfFeatureFlags\Test\Fixtures\ResetFeatureFlagFixture;
+use OnixSystemsPHP\HyperfFeatureFlags\Test\Fixtures\FeatureFlagFixture;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,31 +25,40 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use function Hyperf\Support\make;
 
 #[CoversClass(ResetFeatureFlagService::class)]
-class ResetFeatureFlagServiceTest extends TestCase
+class ResetFeatureFlagTest extends TestCase
 {
+    private FeatureFlagRepository $featureFlagRepository;
+    private CorePolicyGuard $policyGuard;
+    private EventDispatcherInterface $eventDispatcher;
+    private RedisWrapper $redisWrapper;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->featureFlagRepository = Mockery::mock(FeatureFlagRepository::class);
+        $this->policyGuard = Mockery::mock(CorePolicyGuard::class);
+        $this->eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $this->redisWrapper = Mockery::mock(RedisWrapper::class);
     }
 
     #[Test]
-    public function that_feature_flag_resets_correctly()
+    public function that_feature_flag_was_reset_correctly()
     {
         $service = $this->getService();
 
-        $result = $service->run(ResetFeatureFlagFixture::resetFeatureFlagDTO());
+        $result = $service->run(FeatureFlagFixture::resetFeatureFlagDTO());
 
         $this->assertTrue($result);
     }
 
     #[Test]
-    public function that_feature_flag_does_not_resets_because_invalid_data()
+    public function that_feature_flag_was_not_reset_because_invalid_data()
     {
         $this->expectException(ValidationException::class);
 
         $service = $this->getService();
 
-        $service->run(ResetFeatureFlagFixture::invalidFeatureFlagDTO());
+        $service->run(FeatureFlagFixture::invalidResetFeatureFlagDTO());
     }
 
     /**
@@ -51,27 +66,24 @@ class ResetFeatureFlagServiceTest extends TestCase
      */
     private function getService(): ResetFeatureFlagService
     {
-        $featureFlagRepository = Mockery::mock(FeatureFlagRepository::class);
-        $policyGuard = Mockery::mock(CorePolicyGuard::class);
-        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
-        $redisWrapper = Mockery::mock(RedisWrapper::class);
-        $featureFlagRepository
+        $this->featureFlagRepository
             ->shouldReceive('getByName')
-            ->andReturn(ResetFeatureFlagFixture::featureFlag());
-        $featureFlagRepository
+            ->andReturn(FeatureFlagFixture::overriddenWithFeatureRule());
+        $this->featureFlagRepository
             ->shouldReceive('delete');
-        $policyGuard
+        $this->policyGuard
             ->shouldReceive('check');
-        $eventDispatcher
+        $this->eventDispatcher
             ->shouldReceive('dispatch');
-        $redisWrapper
+        $this->redisWrapper
             ->shouldReceive('del');
+
         return new ResetFeatureFlagService(
             make(ValidatorFactoryInterface::class),
-            $featureFlagRepository,
-            $policyGuard,
-            $eventDispatcher,
-            $redisWrapper
+            $this->featureFlagRepository,
+            $this->policyGuard,
+            $this->eventDispatcher,
+            $this->redisWrapper
         );
     }
 }

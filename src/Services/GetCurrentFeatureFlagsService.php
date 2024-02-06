@@ -31,10 +31,9 @@ readonly class GetCurrentFeatureFlagsService
     public function run(): array
     {
         $result = [];
-        $keys = array_keys($this->config->get('feature_flags'));
         array_map(function ($key) use (&$result) {
             return $result[$key] = $this->getFeatureFlagService->run($key);
-        }, $keys);
+        }, array_keys($this->config->get('feature_flags')));
 
         return $result;
     }

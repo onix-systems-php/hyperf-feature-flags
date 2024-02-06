@@ -11,11 +11,11 @@ namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
 use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
-use OnixSystemsPHP\HyperfActionsLog\Event\Action;
 use OnixSystemsPHP\HyperfCore\Contract\CorePolicyGuard;
 use OnixSystemsPHP\HyperfCore\Service\Service;
 use OnixSystemsPHP\HyperfFeatureFlags\Constants\Actions;
 use OnixSystemsPHP\HyperfFeatureFlags\DTO\ResetFeatureFlagDTO;
+use OnixSystemsPHP\HyperfFeatureFlags\Event\Action;
 use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -36,18 +36,18 @@ readonly class ResetFeatureFlagService
      * Reset feature flag to default.
      *
      * @param ResetFeatureFlagDTO $resetFeatureFlagDTO
-     * @return void
+     * @return bool
      * @throws \RedisException
      */
     #[Transactional]
-    public function run(ResetFeatureFlagDTO $resetFeatureFlagDTO): void
+    public function run(ResetFeatureFlagDTO $resetFeatureFlagDTO): bool
     {
         $this->validate($resetFeatureFlagDTO);
 
         $featureFlag = $this->featureFlagRepository->getByName($resetFeatureFlagDTO->name, force: true);
 
         $this->policyGuard?->check('reset', $featureFlag);
-        $featureFlag->delete();
+        $this->featureFlagRepository->delete($featureFlag);
         $this->redisWrapper->del($featureFlag->name);
 
         $this->eventDispatcher->dispatch(
@@ -55,6 +55,8 @@ readonly class ResetFeatureFlagService
                 'feature_flag_name' => $resetFeatureFlagDTO->name,
             ])
         );
+
+        return true;
     }
 
     /**

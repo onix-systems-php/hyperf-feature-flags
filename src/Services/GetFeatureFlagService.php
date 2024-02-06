@@ -16,14 +16,14 @@ use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
 
 #[Service]
-readonly class GetFeatureFlagService
+class GetFeatureFlagService
 {
     public const FEATURE_FLAG_DOT_PREFIX = 'feature_flag.';
 
     public function __construct(
-        private RedisWrapper $redisWrapper,
-        private ConfigInterface $config,
-        private FeatureFlagRepository $featureFlagRepository,
+        private readonly RedisWrapper $redisWrapper,
+        private readonly ConfigInterface $config,
+        private readonly FeatureFlagRepository $featureFlagRepository,
     ) {}
 
     /**

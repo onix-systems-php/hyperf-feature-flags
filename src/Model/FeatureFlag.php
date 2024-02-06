@@ -44,7 +44,6 @@ class FeatureFlag extends AbstractOwnedModel
     protected array $casts = [
         'id' => 'integer',
         'name' => 'string',
-        'rule' => 'string',
         'overridden_at' => 'datetime',
         'user_id' => 'integer',
     ];

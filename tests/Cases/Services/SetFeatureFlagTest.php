@@ -1,5 +1,12 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of the extension library for Hyperf.
+ *
+ * @license https://github.com/hyperf/blob/master/LICENSE
+ */
+
 namespace OnixSystemsPHP\HyperfFeatureFlags\Test\Cases\Services;
 
 use Hyperf\Event\EventDispatcher;
@@ -23,41 +30,35 @@ use function Hyperf\Support\make;
 class SetFeatureFlagTest extends TestCase
 {
     private FeatureFlag $featureFlag;
+    private RedisWrapper $redisWrapper;
+    private CorePolicyGuard $policyGuard;
+    private EventDispatcher $eventDispatcher;
+    private CoreAuthenticatableProvider $coreAuthenticatableProvider;
+    private FeatureFlagRepository $featureFlagRepository;
+    private ValidatorFactoryInterface $validatorFactory;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->featureFlag = FeatureFlag::make(FeatureFlagFixture::successfulFeatureFlagDTO()->toArray());
+        $this->featureFlagRepository = Mockery::mock(FeatureFlagRepository::class);
+        $this->coreAuthenticatableProvider = Mockery::mock(CoreAuthenticatableProvider::class);
+        $this->eventDispatcher = Mockery::mock(EventDispatcher::class);
+        $this->redisWrapper = Mockery::mock(RedisWrapper::class);
+        $this->policyGuard = Mockery::mock(CorePolicyGuard::class);
+        $this->validatorFactory = make(ValidatorFactoryInterface::class);
+    }
 
     #[Test]
     public function that_feature_flag_stored_correctly()
     {
         $service = $this->getService();
+
         $featureFlag = $service->run(FeatureFlagFixture::successfulFeatureFlagDTO());
+
         $this->assertSame($featureFlag->name, FeatureFlagFixture::successfulFeatureFlagDTO()->name);
         $this->assertSame($featureFlag->rule, FeatureFlagFixture::successfulFeatureFlagDTO()->rule);
         $this->assertNull($this->redisWrapper->get($featureFlag->name));
-    }
-
-    /**
-     * @return SetFeatureFlagService
-     */
-    private function getService(): SetFeatureFlagService
-    {
-        $featureFlagRepository = Mockery::mock(FeatureFlagRepository::class);
-        $featureFlagRepository->shouldReceive('create', 'updateOrCreate')->andReturn($this->featureFlag);
-        $coreAuthenticatableProvider = Mockery::mock(CoreAuthenticatableProvider::class);
-        $coreAuthenticatableProvider->shouldReceive('user');
-        $eventDispatcher = Mockery::mock(EventDispatcher::class);
-        $eventDispatcher->shouldReceive('dispatch');
-        $redisWrapper = Mockery::mock(RedisWrapper::class);
-        $redisWrapper->shouldReceive('del')->andReturn(1);
-        $policyGuard = Mockery::mock(CorePolicyGuard::class);
-        $policyGuard->shouldReceive('check');
-
-        return new SetFeatureFlagService(
-            $coreAuthenticatableProvider,
-            $featureFlagRepository,
-            $eventDispatcher,
-            make(ValidatorFactoryInterface::class),
-            $redisWrapper,
-            $policyGuard
-        );
     }
 
     #[Test]
@@ -70,10 +71,33 @@ class SetFeatureFlagTest extends TestCase
         $service->run(FeatureFlagFixture::invalidFeatureFlagDTO());
     }
 
-    protected function setUp(): void
+    /**
+     * @return SetFeatureFlagService
+     */
+    private function getService(): SetFeatureFlagService
     {
-        parent::setUp();
-        $this->featureFlag = FeatureFlag::make(FeatureFlagFixture::successfulFeatureFlagDTO()->toArray());
-        $this->redisWrapper = make(RedisWrapper::class);
+        $this->featureFlagRepository
+            ->shouldReceive('create', 'updateOrCreate')
+            ->andReturn($this->featureFlag);
+        $this->coreAuthenticatableProvider
+            ->shouldReceive('user');
+        $this->eventDispatcher
+            ->shouldReceive('dispatch');
+        $this->redisWrapper
+            ->shouldReceive('get');
+        $this->redisWrapper
+            ->shouldReceive('del')
+            ->andReturn(1);
+        $this->policyGuard
+            ->shouldReceive('check');
+
+        return new SetFeatureFlagService(
+            $this->coreAuthenticatableProvider,
+            $this->featureFlagRepository,
+            $this->eventDispatcher,
+            $this->validatorFactory,
+            $this->redisWrapper,
+            $this->policyGuard
+        );
     }
 }

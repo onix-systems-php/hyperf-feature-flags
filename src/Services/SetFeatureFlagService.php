@@ -11,14 +11,13 @@ namespace OnixSystemsPHP\HyperfFeatureFlags\Services;
 
 use Carbon\Carbon;
 use Hyperf\DbConnection\Annotation\Transactional;
-use Hyperf\Redis\Redis;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
-use OnixSystemsPHP\HyperfActionsLog\Event\Action;
 use OnixSystemsPHP\HyperfCore\Contract\CoreAuthenticatableProvider;
 use OnixSystemsPHP\HyperfCore\Contract\CorePolicyGuard;
 use OnixSystemsPHP\HyperfCore\Service\Service;
 use OnixSystemsPHP\HyperfFeatureFlags\Constants\Actions;
 use OnixSystemsPHP\HyperfFeatureFlags\DTO\UpdateFeatureFlagDTO;
+use OnixSystemsPHP\HyperfFeatureFlags\Event\Action;
 use OnixSystemsPHP\HyperfFeatureFlags\Model\FeatureFlag;
 use OnixSystemsPHP\HyperfFeatureFlags\RedisWrapper;
 use OnixSystemsPHP\HyperfFeatureFlags\Repositories\FeatureFlagRepository;
