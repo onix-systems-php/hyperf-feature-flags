@@ -18,6 +18,8 @@ use Hyperf\Di\Exception\Exception;
 use OnixSystemsPHP\HyperfFeatureFlags\Annotations\FeatureFlag;
 use OnixSystemsPHP\HyperfFeatureFlags\Services\GetFeatureFlagService;
 
+use function Hyperf\Translation\__;
+
 #[Aspect]
 class FeatureFlagAspect extends AbstractAspect
 {

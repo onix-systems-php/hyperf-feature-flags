@@ -10,6 +10,10 @@ declare(strict_types=1);
 return [
     /**
      * Feature flags configuration.
+     *
+     * Example:
+     * 'name' => value
+     * 'slack-integration' => true
      */
-    //...
+    'slack-integration' => true,
 ];

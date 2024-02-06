@@ -35,11 +35,10 @@ readonly class GetOverriddenFeatureFlagsService
         array_map(function ($featureFlag) use (&$result) {
             return $result[$featureFlag->name] = $featureFlag->rule;
         }, (array) $this->featureFlagRepository->all(['name', 'rule']));
-        $keys = array_keys($this->config->get('feature_flags'));
         array_map(function ($key) use (&$result) {
             $result[$key] = $this->redisWrapper->get($key);
-        }, $keys);
+        }, array_keys($this->config->get('feature_flags')));
 
-        return array_filter($result, fn($elem) => $elem !== null);
+        return array_filter($result);
     }
 }
